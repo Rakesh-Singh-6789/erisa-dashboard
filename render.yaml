@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: erisa-assessment
+    env: python
+    region: oregon
+    buildCommand: |
+      pip install -r requirements.txt
+      python manage.py collectstatic --noinput
+    startCommand: |
+      ln -sf /var/data/claims_db.sqlite3 ./claims_db.sqlite3 || true
+      python manage.py migrate
+      python manage.py runserver 0.0.0.0:$PORT
+    envVars:
+      - key: SECRET_KEY
+        sync: false  # set in Render Dashboard
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "erisa-assessment.onrender.com"
+    disk:
+      name: data
+      mountPath: /var/data
+      sizeGB: 1
+    autoDeploy: true
