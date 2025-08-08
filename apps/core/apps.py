@@ -2,6 +2,7 @@
 Core app configuration.
 """
 from django.apps import AppConfig
+from django.db.backends.signals import connection_created
 
 
 class CoreConfig(AppConfig):
@@ -13,5 +14,11 @@ class CoreConfig(AppConfig):
     
     def ready(self):
         """Import signal handlers when the app is ready."""
-        # Import signals here to avoid circular imports
-        pass
+        # Configure SQLite for better concurrency: WAL + NORMAL sync
+        def set_sqlite_pragmas(sender, connection, **kwargs):
+            if connection.vendor == 'sqlite':
+                with connection.cursor() as cursor:
+                    cursor.execute('PRAGMA journal_mode=WAL;')
+                    cursor.execute('PRAGMA synchronous=NORMAL;')
+
+        connection_created.connect(set_sqlite_pragmas)

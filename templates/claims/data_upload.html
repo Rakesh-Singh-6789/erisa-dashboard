@@ -23,8 +23,26 @@
                 </div>
             </div>
             <div style="padding: 24px;">
-                <form method="post" enctype="multipart/form-data" x-data="uploadForm()">
+                <form 
+                    method="post" 
+                    enctype="multipart/form-data" 
+                    x-data="uploadForm()"
+                    hx-post="{% url 'claims:upload_start_htmx' %}"
+                    hx-encoding="multipart/form-data"
+                    hx-target="#upload-status"
+                    hx-swap="innerHTML"
+                    hx-disabled-elt="button[type=submit]"
+                    hx-on:htmx:beforeRequest="uploading=true"
+                    hx-on:htmx:afterRequest="handleUploadResponse($event)"
+                >
                     {% csrf_token %}
+                    <!-- Full-screen overlay loader -->
+                    <div id="upload-overlay" x-show="uploading" x-cloak style="position: fixed; inset: 0; background: rgba(255,255,255,0.85); display: flex; align-items: center; justify-content: center; z-index: 4000;">
+                        <div style="display:flex; flex-direction:column; align-items:center; gap:12px; background:white; padding:20px 24px; border:1px solid #e9ecef; border-radius:12px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); min-width: 300px;">
+                            <div class="spinner" style="width: 32px; height: 32px; border-width: 3px;"></div>
+                            <div style="font-size:13px; color:#6c757d;">Hang tight! Uploaded data is being processed.</div>
+                        </div>
+                    </div>
                     
                     <div style="background: #e3f2fd; border: 1px solid #bbdefb; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
@@ -90,7 +108,7 @@
                                 onmouseover="this.style.backgroundColor='#6c3ce8'"
                                 onmouseout="this.style.backgroundColor='#7c4dff'">
                             <span class="material-icons" style="font-size: 16px;">upload</span>
-                            <span x-text="uploading ? 'Uploading...' : 'Upload Data'"></span>
+                            <span>Upload Data</span>
                         </button>
                         <a href="{% url 'claims:claims_list' %}" 
                            style="background: white; color: #6c757d; border: 1px solid #e0e0e0; padding: 14px 24px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; display: flex; align-items: center; gap: 8px; transition: all 0.2s;"
@@ -106,7 +124,8 @@
     </div>
     
         <div>
-            <div style="background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; margin-bottom: 24px;">
+            <div id="upload-status"></div>
+            <div style="display:none;">
                 <div style="background: #f8f9fa; border-bottom: 1px solid #e9ecef; padding: 20px;">
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span class="material-icons" style="color: #7c4dff; font-size: 20px;">history</span>
@@ -151,15 +170,88 @@
 </div>
 
 <script>
-function uploadForm() {
-    return {
-        uploading: false,
-        init() {
-            this.$el.addEventListener('submit', () => {
-                this.uploading = true;
-            });
+function uploadForm(){ 
+  return { 
+    uploading:false,
+    init(){
+      // Fallback: if overlay isn't visible soon after submit, force it
+      document.addEventListener('submit', (e)=>{
+        const form = e.target;
+        if(form && form.getAttribute('hx-post')){
+          this.uploading = true;
+          setTimeout(()=>{ if(this.uploading){ this.uploading = true; } }, 50);
         }
+      }, true);
     }
+  }
 }
 </script>
+
+{% block extra_js %}
+<script>
+function handleUploadResponse(evt){
+  // no-op: we rely on status partial and toast when it completes
+}
+// receive completion/failure in status partial via htmx events
+function handleUploadStatusSwap(e){
+  const target = (e.detail && e.detail.target) || e.target;
+  if(!target) return;
+  // Find the swapped status card (target may BE the card or contain it)
+  let statusCard = null;
+  if (target.matches && target.matches('[data-upload-status-card]')) {
+    statusCard = target;
+  } else if (target.querySelector) {
+    statusCard = target.querySelector('[data-upload-status-card]');
+  }
+  if (!statusCard) {
+    // Fallback: look inside #upload-status explicitly
+    const host = document.getElementById('upload-status');
+    if (host) statusCard = host.querySelector('[data-upload-status-card]');
+  }
+  if(!statusCard) return;
+  const state = statusCard.getAttribute('data-state');
+  const formRoot = document.querySelector('form[x-data]');
+  if(state === 'completed'){
+    const overlay = document.getElementById('upload-overlay');
+    if(overlay){ overlay.style.display='none'; overlay.setAttribute('aria-hidden','true'); }
+    if(formRoot && formRoot.__x){ formRoot.__x.$data.uploading = false; }
+    window.dispatchEvent(new CustomEvent('upload-toast', {detail:{type:'success', message:'Upload completed successfully'}}));
+  } else if(state === 'failed'){
+    const overlay = document.getElementById('upload-overlay');
+    if(overlay){ overlay.style.display='none'; overlay.setAttribute('aria-hidden','true'); }
+    if(formRoot && formRoot.__x){ formRoot.__x.$data.uploading = false; }
+    const errNode = statusCard.querySelector('[data-error]');
+    const msg = errNode ? (errNode.getAttribute('data-error') || 'Upload failed') : 'Upload failed';
+    window.dispatchEvent(new CustomEvent('upload-toast', {detail:{type:'error', message: msg}}));
+  }
+}
+
+// Bind handlers both globally and on the specific container
+document.body.addEventListener('htmx:afterSwap', handleUploadStatusSwap);
+document.body.addEventListener('htmx:afterSettle', handleUploadStatusSwap);
+const _host = document.getElementById('upload-status');
+if(_host){
+  _host.addEventListener('htmx:afterSwap', handleUploadStatusSwap);
+  _host.addEventListener('htmx:afterSettle', handleUploadStatusSwap);
+}
+
+// Also handle HX-Trigger event emitted by server for reliability
+document.body.addEventListener('uploadStatus', (e)=>{
+  const data = e.detail || {};
+  const state = data.state;
+  const formRoot = document.querySelector('form[x-data]');
+  const overlay = document.getElementById('upload-overlay');
+  if(state === 'completed'){
+    if(overlay){ overlay.style.display='none'; overlay.setAttribute('aria-hidden','true'); }
+    if(formRoot && formRoot.__x){ formRoot.__x.$data.uploading = false; }
+    window.dispatchEvent(new CustomEvent('upload-toast', {detail:{type:'success', message:'Upload completed successfully'}}));
+  } else if(state === 'failed'){
+    const msg = data.error || 'Upload failed';
+    if(overlay){ overlay.style.display='none'; overlay.setAttribute('aria-hidden','true'); }
+    if(formRoot && formRoot.__x){ formRoot.__x.$data.uploading = false; }
+    window.dispatchEvent(new CustomEvent('upload-toast', {detail:{type:'error', message: msg}}));
+  }
+});
+</script>
+{% endblock %}
 {% endblock %}

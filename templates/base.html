@@ -86,6 +86,28 @@
         </nav>
     </header>
 
+    <!-- Toast (top center) -->
+    <div x-data="{visible:false, msg:'', type:'success', timer:null}"
+         x-init="window.addEventListener('upload-toast', (e) => {
+             clearTimeout(timer);
+             type = e.detail?.type || 'success';
+             msg = e.detail?.message || '';
+             visible = true;
+             timer = setTimeout(() => { visible = false }, 4000);
+         });"
+         x-show="visible"
+         x-cloak
+         style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9000;">
+        <div :style="type==='success' 
+                        ? 'background:#d5f5e3;color:#145a32;border:1px solid #9fe6bf;border-radius:16px;padding:18px 24px;' 
+                        : 'background:#ffe2e2;color:#7f1d1d;border:1px solid #ffb3b3;border-radius:16px;padding:18px 24px;'
+                  + 'box-shadow:0 12px 28px rgba(0,0,0,0.22);font-size:16px;min-width:460px;text-align:center;font-weight:500;'">
+            <span class="material-icons" style="font-size:22px;vertical-align:middle;margin-right:8px;"
+                  x-text="type==='success' ? 'check_circle' : 'error'"></span>
+            <span x-text="msg"></span>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <main style="min-height: calc(100vh - 64px);">
         {% if messages %}

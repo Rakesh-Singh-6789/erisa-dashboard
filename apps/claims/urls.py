@@ -17,6 +17,8 @@ urlpatterns = [
     
     # Data management
     path('upload/', views.DataUploadView.as_view(), name='data_upload'),
+    path('htmx/upload/start/', views.upload_start_htmx, name='upload_start_htmx'),
+    path('htmx/upload/status/<str:job_id>/', views.upload_status_htmx, name='upload_status_htmx'),
     
     # API endpoints for search/filter
     path('api/search/', views.search_claims, name='search_claims'),

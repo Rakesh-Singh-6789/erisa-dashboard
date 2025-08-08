@@ -67,6 +67,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.environ.get('SQLITE_DB_PATH', str(BASE_DIR / 'claims_db.sqlite3')),
+        'OPTIONS': {
+            'timeout': 30,  # increase default (5s) to reduce 'database is locked'
+        },
     }
 }
 

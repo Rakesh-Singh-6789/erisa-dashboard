@@ -1,0 +1,14 @@
+<div data-upload-status-card data-state="{{ status.state }}" data-claims-count="{{ status.claims_count }}" data-details-count="{{ status.details_count }}">
+  {% if status.state == 'queued' or status.state == 'processing' %}
+    <div hx-get="{% url 'claims:upload_status_htmx' job_id=job_id %}"
+         hx-trigger="load delay:300ms, every 2s"
+         hx-target="closest div"
+         hx-swap="outerHTML"
+         hx-timeout="20000"
+         hx-headers='{"HX-Request":"true"}'></div>
+  {% elif status.state == 'completed' %}
+    <!-- empty: toast is raised by upload page via afterSwap listener -->
+  {% else %}
+    <div style="display:none" data-error="{{ status.error|default:'' }}"></div>
+  {% endif %}
+</div>

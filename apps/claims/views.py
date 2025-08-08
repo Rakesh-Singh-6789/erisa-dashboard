@@ -1,16 +1,26 @@
 import csv
 import io
+import uuid
+import json
+import threading
 from datetime import datetime
+import logging
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, TemplateView, View
 from django.http import JsonResponse, HttpResponse
 from django.db.models import Q, Count, Sum, Avg
+from django.db import transaction
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.conf import settings
+from django.db import close_old_connections
 from .models import Claim, ClaimDetail, ClaimFlag, ClaimNote, DataUpload
+
+
+# In-memory job registry for background uploads (keeps stack simple; fine for Replit/Render single dyno)
+UPLOAD_JOBS = {}
 
 
 class ClaimsListView(LoginRequiredMixin, ListView):
@@ -275,22 +285,31 @@ class DataUploadView(LoginRequiredMixin, View):
         """Detect CSV delimiter between pipe and comma (defaults to comma)."""
         return '|' if '|' in first_line else ','
 
-    def _process_claims_file(self, file, mode):
+    def _process_claims_file(self, file, mode, progress_callback=None):
         """Process uploaded claims CSV file"""
         if mode == 'overwrite':
-            Claim.objects.all().delete()
+            # Fast wipes in FK-safe order: notes → flags → details → claims
+            from django.db import connection
+            with connection.cursor() as cursor:
+                cursor.execute('DELETE FROM claims_claimnote;')
+                cursor.execute('DELETE FROM claims_claimflag;')
+                cursor.execute('DELETE FROM claims_claimdetail;')
+                cursor.execute('DELETE FROM claims_claim;')
 
         processed_count = 0
 
-        file_content = file.read().decode('utf-8')
+        # Use utf-8-sig to strip BOM if present
+        file_content = file.read().decode('utf-8-sig')
         lines = file_content.splitlines()
         if not lines:
             return 0
         delimiter = self._detect_delimiter(lines[0])
         reader = csv.DictReader(io.StringIO(file_content), delimiter=delimiter)
 
-        for row in reader:
+        for raw_row in reader:
             try:
+                # Normalize headers to lowercase and strip whitespace
+                row = { (k or '').strip().lower(): (v or '').strip() for k, v in raw_row.items() }
                 discharge_date = datetime.strptime(row['discharge_date'], '%Y-%m-%d').date()
 
                 # Note: Django will coerce strings to Decimal for DecimalField
@@ -298,33 +317,43 @@ class DataUploadView(LoginRequiredMixin, View):
                     claim_id=row['id'],
                     defaults={
                         'patient_name': row['patient_name'],
-                        'billed_amount': row['billed_amount'],
-                        'paid_amount': row['paid_amount'],
+                        'billed_amount': row['billed_amount'] or '0',
+                        'paid_amount': row['paid_amount'] or '0',
                         'status': row['status'],
                         'insurer_name': row['insurer_name'],
                         'discharge_date': discharge_date,
                     }
                 )
                 processed_count += 1
+                if progress_callback:
+                    try:
+                        progress_callback(processed_count)
+                    except Exception:
+                        pass
             except (ValueError, KeyError):
                 # Skip malformed rows
                 continue
 
         return processed_count
 
-    def _process_details_file(self, file):
+    def _process_details_file(self, file, progress_callback=None):
         """Process uploaded details CSV file"""
         processed_count = 0
-        file_content = file.read().decode('utf-8')
+        # Use utf-8-sig to strip BOM if present
+        file_content = file.read().decode('utf-8-sig')
         lines = file_content.splitlines()
         if not lines:
             return 0
         delimiter = self._detect_delimiter(lines[0])
         reader = csv.DictReader(io.StringIO(file_content), delimiter=delimiter)
 
-        for row in reader:
+        for raw_row in reader:
             try:
-                claim = Claim.objects.get(claim_id=row['claim_id'])
+                row = { (k or '').strip().lower(): (v or '').strip() for k, v in raw_row.items() }
+                claim_id = row.get('claim_id', '')
+                if not claim_id:
+                    continue
+                claim = Claim.objects.get(claim_id=claim_id)
                 ClaimDetail.objects.update_or_create(
                     claim=claim,
                     defaults={
@@ -333,6 +362,11 @@ class DataUploadView(LoginRequiredMixin, View):
                     }
                 )
                 processed_count += 1
+                if progress_callback:
+                    try:
+                        progress_callback(processed_count)
+                    except Exception:
+                        pass
             except (Claim.DoesNotExist, KeyError):
                 continue
 
@@ -365,3 +399,124 @@ def search_claims(request):
         })
     
     return JsonResponse({'results': results})
+
+
+# -----------------------------
+# Background upload (HTMX) endpoints
+# -----------------------------
+
+def _run_upload_job(job_id: str, user, claims_bytes: bytes, details_bytes: bytes, mode: str) -> None:
+    """Execute the upload job in background and update UPLOAD_JOBS state."""
+    try:
+        close_old_connections()
+        UPLOAD_JOBS[job_id] = {
+            'state': 'processing',
+            'claims_count': 0,
+            'details_count': 0,
+            'error': None,
+        }
+
+        # Reuse existing processing helpers from DataUploadView
+        view = DataUploadView()
+
+        def update_claims_progress(n):
+            UPLOAD_JOBS[job_id]['claims_count'] = n
+        def update_details_progress(n):
+            UPLOAD_JOBS[job_id]['details_count'] = n
+
+        # Run claims then details sequentially to minimize concurrent write lock contention
+        # Process claims first (optionally wiping old data), then details
+        with transaction.atomic():
+            claims_count = view._process_claims_file(io.BytesIO(claims_bytes), mode, progress_callback=update_claims_progress)
+        # Ensure all claims are committed before inserting details to satisfy FK constraints
+        close_old_connections()
+        with transaction.atomic():
+            details_count = view._process_details_file(io.BytesIO(details_bytes), progress_callback=update_details_progress)
+
+        # Record in DB for history
+        DataUpload.objects.create(
+            upload_type=mode,
+            file_name=f"htmx_job_{job_id}",
+            records_processed=claims_count,
+            user=user,
+            notes=f"Claims: {claims_count}, Details: {details_count}"
+        )
+
+        UPLOAD_JOBS[job_id].update({
+            'state': 'completed',
+            'claims_count': claims_count,
+            'details_count': details_count,
+        })
+    except Exception as exc:  # noqa: BLE001 - show error to user
+        logging.exception("Upload job failed: %s", exc)
+        UPLOAD_JOBS[job_id].update({
+            'state': 'failed',
+            'error': str(exc),
+        })
+    finally:
+        close_old_connections()
+
+
+@login_required
+def upload_start_htmx(request):
+    """Start background upload and return a polling status partial (HTMX)."""
+    if request.method != 'POST':
+        return HttpResponse(status=405)
+
+    claims_file = request.FILES.get('claims_file')
+    details_file = request.FILES.get('details_file')
+    mode = request.POST.get('mode', 'append')
+
+    if not claims_file or not details_file:
+        return HttpResponse('Both files are required.', status=400)
+
+    # Read into memory then process asynchronously
+    claims_bytes = claims_file.read()
+    details_bytes = details_file.read()
+
+    job_id = uuid.uuid4().hex
+    UPLOAD_JOBS[job_id] = {
+        'state': 'queued',
+        'claims_count': 0,
+        'details_count': 0,
+        'error': None,
+    }
+
+    thread = threading.Thread(
+        target=_run_upload_job,
+        args=(job_id, request.user, claims_bytes, details_bytes, mode),
+        daemon=True,
+    )
+    thread.start()
+
+    return render(request, 'claims/partials/upload_status.html', {
+        'job_id': job_id,
+        'status': UPLOAD_JOBS[job_id],
+    })
+
+
+@login_required
+def upload_status_htmx(request, job_id: str):
+    """Return current status for an upload job (HTMX polling)."""
+    status = UPLOAD_JOBS.get(job_id)
+    if not status:
+        status = {'state': 'failed', 'error': 'Job not found', 'claims_count': 0, 'details_count': 0}
+    response = render(request, 'claims/partials/upload_status.html', {
+        'job_id': job_id,
+        'status': status,
+    })
+    # Notify client via HX-Trigger with state so frontend can reliably hide overlay & toast
+    try:
+        trigger_payload = {
+            'uploadStatus': {
+                'state': status.get('state'),
+                'error': status.get('error'),
+                'claims': status.get('claims_count'),
+                'details': status.get('details_count'),
+                'jobId': job_id,
+            }
+        }
+        response['HX-Trigger'] = json.dumps(trigger_payload)
+    except Exception:
+        pass
+    return response
