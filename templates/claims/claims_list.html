@@ -105,16 +105,18 @@
                             Apply Filters
                         </button>
                         
-                        <button type="button" 
-                                onclick="window.location.href='{% url "claims:claims_list" %}'"
-                                style="padding: 12px 24px; background: transparent; color: #6c757d; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px; cursor: pointer;">
+                        <a href="{% url 'claims:claims_list' %}"
+                           style="padding: 12px 24px; background: transparent; color: #6c757d; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px; cursor: pointer; text-decoration: none; display: inline-block;">
                             Clear All
-                        </button>
+                        </a>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+
+    <!-- Server-computed filter state for JS (avoids template tags inside <script>) -->
+    <div id="filter-state" data-active="{% if current_status or current_insurer or current_date_from or current_date_to %}true{% else %}false{% endif %}" style="display:none"></div>
 
     <!-- Main Content Container -->
     <div style="max-width: 1200px; margin: 0 auto; padding: 24px;">
@@ -393,11 +395,7 @@ document.querySelector('input[name="search"]').addEventListener('keyup', functio
 
 // Show filter panel if filters are active
 document.addEventListener('DOMContentLoaded', function() {
-    const hasActiveFilters = {{ current_status|yesno:"true,false" }} || 
-                           {{ current_insurer|yesno:"true,false" }} || 
-                           {{ current_date_from|yesno:"true,false" }} || 
-                           {{ current_date_to|yesno:"true,false" }};
-    
+    var hasActiveFilters = (document.getElementById('filter-state')?.dataset.active === 'true');
     if (hasActiveFilters) {
         document.getElementById('filterPanel').style.display = 'block';
         const filterToggle = document.getElementById('filterToggle');
