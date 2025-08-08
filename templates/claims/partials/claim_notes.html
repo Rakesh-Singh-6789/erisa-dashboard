@@ -1,0 +1,21 @@
+{% for note in claim.notes.all %}
+    <div style="margin-bottom: 16px; padding: 12px; background: var(--md-surface-variant); border-radius: var(--md-border-radius-small);">
+        <div style="display: flex; align-items: start; margin-bottom: 8px;">
+            <span class="material-icons" style="font-size: 16px; margin-right: 8px; color: var(--md-secondary); margin-top: 2px;">note</span>
+            <div style="flex: 1;">
+                <div class="body-medium" style="color: var(--md-on-surface); line-height: 1.4;">{{ note.note }}</div>
+            </div>
+        </div>
+        <div class="label-small" style="color: var(--md-on-surface-variant); margin-left: 24px;">
+            by {{ note.user.username }} • {{ note.created_at|date:"M d, Y g:i A" }}
+            {% if note.updated_at != note.created_at %}
+                • edited {{ note.updated_at|date:"M d, Y g:i A" }}
+            {% endif %}
+        </div>
+    </div>
+{% empty %}
+    <div style="text-align: center; padding: 24px;">
+        <span class="material-icons" style="font-size: 32px; color: var(--md-on-surface-variant); margin-bottom: 8px; display: block;">note_add</span>
+        <p class="body-small" style="color: var(--md-on-surface-variant); margin: 0;">No notes added yet</p>
+    </div>
+{% endfor %}

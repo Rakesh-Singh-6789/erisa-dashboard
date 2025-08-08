@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ERISA Assessment{% endblock %}</title>
+    
+    <!-- Google Fonts - Roboto for Material Design -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- Bootstrap Grid Only (for responsive layout) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap-grid.min.css" rel="stylesheet">
+    
+    {% load static %}
+    <link href="{% static 'css/dashboard.css' %}" rel="stylesheet">
+    
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10/dist/htmx.min.js"></script>
+    
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body>
+    <!-- Minimalist Header -->
+    <header style="background: #fafbff; border-bottom: 1px solid #e3e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <nav style="padding: 16px 24px;">
+            <div style="max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between;">
+                <!-- Logo/Brand -->
+                <a href="{% url 'claims:claims_list' %}" style="color: #212529; text-decoration: none; display: flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 600;">
+                    <span class="material-icons" style="font-size: 24px; color: #7c4dff;">assessment</span>
+                    ERISA Assessment
+                </a>
+                
+                <!-- Navigation & User -->
+                <div style="display: flex; align-items: center; gap: 32px;">
+                    {% if user.is_authenticated %}
+                        <!-- Navigation Links -->
+                        <div style="display: flex; align-items: center; gap: 24px;">
+                            <a href="{% url 'claims:claims_list' %}" style="color: #6c757d; text-decoration: none; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; transition: color 0.2s;"
+                               onmouseover="this.style.color='#212529'"
+                               onmouseout="this.style.color='#6c757d'">
+                                <span class="material-icons" style="font-size: 16px;">view_list</span>
+                                Claims
+                            </a>
+                            <a href="{% url 'claims:dashboard' %}" style="color: #6c757d; text-decoration: none; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; transition: color 0.2s;"
+                               onmouseover="this.style.color='#212529'"
+                               onmouseout="this.style.color='#6c757d'">
+                                <span class="material-icons" style="font-size: 16px;">dashboard</span>
+                                Dashboard
+                            </a>
+                            <a href="{% url 'claims:data_upload' %}" style="color: #6c757d; text-decoration: none; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; transition: color 0.2s;"
+                               onmouseover="this.style.color='#212529'"
+                               onmouseout="this.style.color='#6c757d'">
+                                <span class="material-icons" style="font-size: 16px;">upload</span>
+                                Upload
+                            </a>
+                        </div>
+                        
+                        <!-- User Section -->
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="material-icons" style="font-size: 18px; color: #6c757d;">account_circle</span>
+                                <span style="color: #6c757d; font-size: 14px;">{{ user.username|capfirst }}</span>
+                            </div>
+                            <a href="{% url 'logout' %}" style="color: #6c757d; text-decoration: none; font-size: 13px; padding: 6px 12px; border: 1px solid #e0e0e0; border-radius: 4px; transition: all 0.2s;"
+                               onmouseover="this.style.borderColor='#7c4dff'; this.style.color='#7c4dff'"
+                               onmouseout="this.style.borderColor='#e0e0e0'; this.style.color='#6c757d'">
+                                Logout
+                            </a>
+                        </div>
+                    {% else %}
+                        <!-- Login Button -->
+                        <a href="{% url 'login' %}" style="color: #7c4dff; text-decoration: none; font-size: 14px; font-weight: 500; padding: 8px 16px; border: 1px solid #7c4dff; border-radius: 4px; transition: all 0.2s;"
+                           onmouseover="this.style.background='#7c4dff'; this.style.color='white'"
+                           onmouseout="this.style.background='transparent'; this.style.color='#7c4dff'">
+                            Sign In
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main style="min-height: calc(100vh - 64px);">
+        {% if messages %}
+            {% for message in messages %}
+                <div style="background: #d4edda; color: #155724; padding: 12px 24px; border-left: 4px solid #28a745; margin: 0;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    {% load static %}
+    <script src="{% static 'js/dashboard.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

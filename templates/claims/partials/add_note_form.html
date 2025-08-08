@@ -1,0 +1,35 @@
+<div style="margin-top: 16px; padding: 16px; background: var(--md-secondary-container); border-radius: var(--md-border-radius-small);">
+    <form hx-post="{% url 'claims:add_note_htmx' claim.claim_id %}" hx-target="#notesContainer" hx-swap="innerHTML">
+        {% csrf_token %}
+        
+        <div style="margin-bottom: 20px;">
+            <label class="form-label" style="display: flex; align-items: center;">
+                <span class="material-icons" style="font-size: 16px; margin-right: 4px;">note_add</span>
+                Note
+            </label>
+            <textarea 
+                name="note" 
+                class="form-control" 
+                rows="3" 
+                placeholder="Add your note here..." 
+                required
+                style="resize: vertical;"
+            ></textarea>
+        </div>
+        
+        <div style="display: flex; gap: 8px;">
+            <button type="submit" class="btn btn-primary btn-sm" style="flex: 1;">
+                <span class="material-icons" style="font-size: 14px; margin-right: 4px;">add</span>
+                Add Note
+            </button>
+            <button 
+                type="button" 
+                class="btn btn-outline-primary btn-sm" 
+                style="flex: 1;"
+                onclick="this.closest('div[style*=\"margin-top: 16px\"]').remove()"
+            >
+                Cancel
+            </button>
+        </div>
+    </form>
+</div>

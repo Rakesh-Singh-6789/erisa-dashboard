@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block title %}Data Upload - ERISA Assessment{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto; padding: 32px 24px;">
+    
+    <!-- Page Header -->
+    <div style="margin-bottom: 48px;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+            <span class="material-icons" style="color: #7c4dff; font-size: 32px;">upload_file</span>
+            <h1 style="margin: 0; font-size: 28px; font-weight: 600; color: #212529;">Data Management</h1>
+        </div>
+        <p style="color: #6c757d; margin: 0; font-size: 16px;">Upload and manage claims data</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 32px; align-items: start;">
+        <div style="background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden;">
+            <div style="background: #f8f9fa; border-bottom: 1px solid #e9ecef; padding: 20px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="material-icons" style="color: #7c4dff; font-size: 20px;">upload_file</span>
+                    <h5 style="margin: 0; font-size: 18px; font-weight: 600; color: #212529;">Upload Claims Data</h5>
+                </div>
+            </div>
+            <div style="padding: 24px;">
+                <form method="post" enctype="multipart/form-data" x-data="uploadForm()">
+                    {% csrf_token %}
+                    
+                    <div style="background: #e3f2fd; border: 1px solid #bbdefb; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                            <span class="material-icons" style="color: #1976d2; font-size: 20px;">info</span>
+                            <strong style="color: #1976d2;">Upload Requirements:</strong>
+                        </div>
+                        <ul style="margin: 0; padding-left: 20px; color: #1565c0;">
+                            <li>Both claims list and claims detail CSV files are required</li>
+                            <li>Files should match the original format</li>
+                            <li>Choose "Append" to add new data or "Overwrite" to replace all existing data</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                        <div>
+                            <label style="display: block; font-size: 14px; font-weight: 500; color: #212529; margin-bottom: 8px;">Claims List File (CSV)</label>
+                            <input type="file" name="claims_file" accept=".csv" required 
+                                   style="width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px; background: white; transition: border-color 0.2s;"
+                                   onfocus="this.style.borderColor='#7c4dff'"
+                                   onblur="this.style.borderColor='#e0e0e0'">
+                            <div style="font-size: 12px; color: #6c757d; margin-top: 4px;">Should contain: id, patient_name, billed_amount, paid_amount, status, insurer_name, discharge_date</div>
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; font-size: 14px; font-weight: 500; color: #212529; margin-bottom: 8px;">Claims Detail File (CSV)</label>
+                            <input type="file" name="details_file" accept=".csv" required 
+                                   style="width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px; background: white; transition: border-color 0.2s;"
+                                   onfocus="this.style.borderColor='#7c4dff'"
+                                   onblur="this.style.borderColor='#e0e0e0'">
+                            <div style="font-size: 12px; color: #6c757d; margin-top: 4px;">Should contain: id, claim_id, denial_reason, cpt_codes</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 32px;">
+                        <label style="display: block; font-size: 14px; font-weight: 500; color: #212529; margin-bottom: 16px;">Upload Mode</label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <label style="display: flex; align-items: flex-start; gap: 12px; padding: 16px; border: 1px solid #e0e0e0; border-radius: 8px; cursor: pointer; transition: all 0.2s;"
+                                   onmouseover="this.style.borderColor='#7c4dff'"
+                                   onmouseout="this.style.borderColor='#e0e0e0'">
+                                <input type="radio" name="mode" value="append" checked 
+                                       style="margin-top: 2px;">
+                                <div>
+                                    <strong style="color: #212529;">Append Data</strong>
+                                    <div style="color: #6c757d; font-size: 13px; margin-top: 4px;">Add new records to existing data</div>
+                                </div>
+                            </label>
+                            <label style="display: flex; align-items: flex-start; gap: 12px; padding: 16px; border: 1px solid #e0e0e0; border-radius: 8px; cursor: pointer; transition: all 0.2s;"
+                                   onmouseover="this.style.borderColor='#dc3545'"
+                                   onmouseout="this.style.borderColor='#e0e0e0'">
+                                <input type="radio" name="mode" value="overwrite" 
+                                       style="margin-top: 2px;">
+                                <div>
+                                    <strong style="color: #212529;">Overwrite Data</strong>
+                                    <div style="color: #dc3545; font-size: 13px; margin-top: 4px;">Replace all existing claims data</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 12px;">
+                        <button type="submit" :disabled="uploading" 
+                                style="background: #7c4dff; color: white; border: none; padding: 14px 24px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background-color 0.2s;"
+                                onmouseover="this.style.backgroundColor='#6c3ce8'"
+                                onmouseout="this.style.backgroundColor='#7c4dff'">
+                            <span class="material-icons" style="font-size: 16px;">upload</span>
+                            <span x-text="uploading ? 'Uploading...' : 'Upload Data'"></span>
+                        </button>
+                        <a href="{% url 'claims:claims_list' %}" 
+                           style="background: white; color: #6c757d; border: 1px solid #e0e0e0; padding: 14px 24px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; display: flex; align-items: center; gap: 8px; transition: all 0.2s;"
+                           onmouseover="this.style.borderColor='#6c757d'"
+                           onmouseout="this.style.borderColor='#e0e0e0'">
+                            <span class="material-icons" style="font-size: 16px;">arrow_back</span>
+                            Back to Claims
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+        <div>
+            <div style="background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; margin-bottom: 24px;">
+                <div style="background: #f8f9fa; border-bottom: 1px solid #e9ecef; padding: 20px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="material-icons" style="color: #7c4dff; font-size: 20px;">history</span>
+                        <h5 style="margin: 0; font-size: 18px; font-weight: 600; color: #212529;">Recent Uploads</h5>
+                    </div>
+                </div>
+                <div style="padding: 24px;">
+                    {% for upload in recent_uploads %}
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 16px; border: 1px solid #f1f3f4; border-radius: 8px; margin-bottom: 16px;">
+                            <div>
+                                <div style="font-weight: 600; color: #212529; margin-bottom: 4px;">{{ upload.get_upload_type_display }}</div>
+                                <div style="font-size: 12px; color: #6c757d; margin-bottom: 2px;">{{ upload.file_name|truncatechars:30 }}</div>
+                                <div style="font-size: 12px; color: #28a745;">{{ upload.records_processed }} records</div>
+                                {% if upload.user %}
+                                    <div style="font-size: 12px; color: #6c757d;">by {{ upload.user.username }}</div>
+                                {% endif %}
+                            </div>
+                            <div style="font-size: 12px; color: #6c757d; white-space: nowrap;">{{ upload.upload_timestamp|timesince }} ago</div>
+                        </div>
+                    {% empty %}
+                        <p style="color: #6c757d; text-align: center; margin: 0;">No recent uploads</p>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div style="background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden;">
+                <div style="background: #f8f9fa; border-bottom: 1px solid #e9ecef; padding: 20px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="material-icons" style="color: #7c4dff; font-size: 20px;">terminal</span>
+                        <h5 style="margin: 0; font-size: 18px; font-weight: 600; color: #212529;">Command Line Alternative</h5>
+                    </div>
+                </div>
+                <div style="padding: 24px;">
+                    <p style="font-size: 14px; color: #6c757d; margin-bottom: 16px;">You can also load data using the management command:</p>
+                    <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 16px; font-family: 'Monaco', 'Consolas', monospace; font-size: 13px; color: #212529; overflow-x: auto;">
+                        python manage.py load_claims_data --claims-file path/to/claims.csv --details-file path/to/details.csv --mode overwrite
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function uploadForm() {
+    return {
+        uploading: false,
+        init() {
+            this.$el.addEventListener('submit', () => {
+                this.uploading = true;
+            });
+        }
+    }
+}
+</script>
+{% endblock %}

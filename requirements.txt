@@ -1,0 +1,10 @@
+# Requirements for ERISA Assessment project
+
+# Django Framework
+Django==5.0.9
+
+# Static file serving
+whitenoise==6.6.0
+
+# Admin and development utilities
+django-extensions==3.2.3

@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Dashboard - ERISA Assessment{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto; padding: 32px 24px;">
+    
+    <!-- Page Header -->
+    <div style="margin-bottom: 40px;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+            <span class="material-icons" style="color: #7c4dff; font-size: 32px;">dashboard</span>
+            <h1 style="margin: 0; font-size: 28px; font-weight: 600; color: #212529;">Analytics Dashboard</h1>
+        </div>
+        <p style="color: #6c757d; margin: 0; font-size: 16px;">Overview of claims analysis and key metrics</p>
+    </div>
+
+    <!-- Key Metrics Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 40px;">
+        <div style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 4px solid #7c4dff; transition: transform 0.2s ease; height: 140px; display: flex; flex-direction: column; justify-content: space-between;" 
+             onmouseover="this.style.transform='translateY(-2px)'" 
+             onmouseout="this.style.transform='translateY(0)'">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <div style="background: #f3f0ff; padding: 12px; border-radius: 8px;">
+                    <span class="material-icons" style="font-size: 24px; color: #7c4dff;">description</span>
+                </div>
+                <div>
+                    <div style="font-size: 32px; font-weight: 700; color: #212529; line-height: 1;">{{ total_claims|intcomma }}</div>
+                    <div style="font-size: 14px; color: #6c757d; font-weight: 500; margin-top: 4px;">Total Claims</div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 4px solid #28a745; transition: transform 0.2s ease; height: 140px; display: flex; flex-direction: column; justify-content: space-between;" 
+             onmouseover="this.style.transform='translateY(-2px)'" 
+             onmouseout="this.style.transform='translateY(0)'">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <div style="background: #e8f5e8; padding: 12px; border-radius: 8px;">
+                    <span class="material-icons" style="font-size: 24px; color: #28a745;">attach_money</span>
+                </div>
+                <div>
+                    <div style="font-size: 32px; font-weight: 700; color: #212529; line-height: 1;">${{ total_billed|floatformat:0|intcomma }}</div>
+                    <div style="font-size: 14px; color: #6c757d; font-weight: 500; margin-top: 4px;">Total Billed</div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 4px solid #ffc107; transition: transform 0.2s ease; height: 140px; display: flex; flex-direction: column; justify-content: space-between;" 
+             onmouseover="this.style.transform='translateY(-2px)'" 
+             onmouseout="this.style.transform='translateY(0)'">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <div style="background: #fff8e1; padding: 12px; border-radius: 8px;">
+                    <span class="material-icons" style="font-size: 24px; color: #ffc107;">flag</span>
+                </div>
+                <div>
+                    <div style="font-size: 32px; font-weight: 700; color: #212529; line-height: 1;">{{ flagged_claims|intcomma }}</div>
+                    <div style="font-size: 14px; color: #6c757d; font-weight: 500; margin-top: 4px;">Flagged Claims</div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 4px solid #dc3545; transition: transform 0.2s ease; height: 140px; display: flex; flex-direction: column; justify-content: space-between;" 
+             onmouseover="this.style.transform='translateY(-2px)'" 
+             onmouseout="this.style.transform='translateY(0)'">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <div style="background: #ffeaea; padding: 12px; border-radius: 8px;">
+                    <span class="material-icons" style="font-size: 24px; color: #dc3545;">trending_down</span>
+                </div>
+                <div>
+                    <div style="font-size: 32px; font-weight: 700; color: #212529; line-height: 1;">${{ avg_underpayment|floatformat:0|intcomma }}</div>
+                    <div style="font-size: 14px; color: #6c757d; font-weight: 500; margin-top: 4px;">Avg Underpayment</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 40px;">
+        <!-- Claims by Status -->
+        <div style="background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;">
+            <div style="background: #f8f9fa; border-bottom: 1px solid #e9ecef; padding: 20px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="material-icons" style="color: #7c4dff; font-size: 20px;">pie_chart</span>
+                    <h6 style="margin: 0; font-size: 16px; font-weight: 600; color: #212529;">Claims by Status</h6>
+                </div>
+            </div>
+            <div style="padding: 24px;">
+                {% for status in status_breakdown %}
+                    <div style="margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="width: 12px; height: 12px; border-radius: 50%; 
+                                    {% if status.status == 'Paid' %}background: #28a745;
+                                    {% elif status.status == 'Denied' %}background: #dc3545;
+                                    {% else %}background: #ffc107;{% endif %}">
+                                </div>
+                                <span style="font-size: 14px; font-weight: 500; color: #212529;">{{ status.status }}</span>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 16px; font-weight: 600; color: #212529;">{{ status.count }}</div>
+                                <div style="font-size: 12px; color: #6c757d;">
+                                    {% widthratio status.count total_claims 100 %}%
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Progress Bar -->
+                        <div style="background: #f1f3f4; height: 6px; border-radius: 3px; overflow: hidden;">
+                            <div style="height: 100%; border-radius: 3px; width: {% widthratio status.count total_claims 100 %}%; transition: width 0.3s ease;
+                                {% if status.status == 'Paid' %}background: #28a745;
+                                {% elif status.status == 'Denied' %}background: #dc3545;
+                                {% else %}background: #ffc107;{% endif %}">
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Top Insurers -->
+        <div style="background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;">
+            <div style="background: #f8f9fa; border-bottom: 1px solid #e9ecef; padding: 20px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="material-icons" style="color: #7c4dff; font-size: 20px;">business</span>
+                    <h6 style="margin: 0; font-size: 16px; font-weight: 600; color: #212529;">Top Insurers</h6>
+                </div>
+            </div>
+            <div style="padding: 24px;">
+                {% for insurer in insurer_stats %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 0; {% if not forloop.last %}border-bottom: 1px solid #f1f3f4;{% endif %}">
+                        <div>
+                            <div style="font-size: 14px; font-weight: 500; color: #212529; margin-bottom: 4px;">{{ insurer.insurer_name }}</div>
+                            <div style="font-size: 12px; color: #6c757d;">
+                                ${{ insurer.total_billed|floatformat:0|intcomma }} billed
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="background: #e3f2fd; color: #1976d2; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 500;">
+                                {{ insurer.count|intcomma }} claims
+                            </span>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Underpaid Claims -->
+    <div style="background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;">
+        <div style="background: #f8f9fa; border-bottom: 1px solid #e9ecef; padding: 20px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="material-icons" style="color: #7c4dff; font-size: 20px;">trending_down</span>
+                <h6 style="margin: 0; font-size: 16px; font-weight: 600; color: #212529;">Top Underpaid Claims</h6>
+            </div>
+            <a href="{% url 'claims:claims_list' %}" 
+               style="background: #7c4dff; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 500; transition: background-color 0.2s;"
+               onmouseover="this.style.backgroundColor='#6c3ce8'"
+               onmouseout="this.style.backgroundColor='#7c4dff'">
+                View All Claims
+            </a>
+        </div>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #fafafa;">
+                        <th style="padding: 16px 20px; text-align: left; font-size: 11px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e9ecef;">CLAIM ID</th>
+                        <th style="padding: 16px 20px; text-align: left; font-size: 11px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e9ecef;">PATIENT</th>
+                        <th style="padding: 16px 20px; text-align: left; font-size: 11px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e9ecef;">BILLED</th>
+                        <th style="padding: 16px 20px; text-align: left; font-size: 11px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e9ecef;">PAID</th>
+                        <th style="padding: 16px 20px; text-align: left; font-size: 11px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e9ecef;">UNDERPAYMENT</th>
+                        <th style="padding: 16px 20px; text-align: left; font-size: 11px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e9ecef;">INSURER</th>
+                        <th style="padding: 16px 20px; text-align: center; font-size: 11px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e9ecef; width: 50px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for claim in top_underpaid %}
+                        <tr onclick="window.location.href='{% url 'claims:claims_list' %}'" 
+                            style="cursor: pointer; transition: background-color 0.2s; {% if not forloop.last %}border-bottom: 1px solid #f1f3f4;{% endif %}"
+                            onmouseover="this.style.backgroundColor='#f8f9fa'"
+                            onmouseout="this.style.backgroundColor='white'">
+                            <td style="padding: 16px 20px;">
+                                <span style="color: #7c4dff; font-weight: 500; font-size: 14px;">{{ claim.claim_id }}</span>
+                            </td>
+                            <td style="padding: 16px 20px;">
+                                <span style="color: #212529; font-size: 14px;">{{ claim.patient_name }}</span>
+                            </td>
+                            <td style="padding: 16px 20px;">
+                                <span style="color: #212529; font-weight: 500; font-size: 14px;">${{ claim.billed_amount|floatformat:2|intcomma }}</span>
+                            </td>
+                            <td style="padding: 16px 20px;">
+                                <span style="color: #28a745; font-weight: 500; font-size: 14px;">${{ claim.paid_amount|floatformat:2|intcomma }}</span>
+                            </td>
+                            <td style="padding: 16px 20px;">
+                                <span style="color: #dc3545; font-weight: 600; font-size: 14px;">
+                                    ${{ claim.underpayment|floatformat:2|intcomma }}
+                                </span>
+                            </td>
+                            <td style="padding: 16px 20px;">
+                                <span style="color: #6c757d; font-size: 13px;">{{ claim.insurer_name|truncatechars:20 }}</span>
+                            </td>
+                            <td style="padding: 16px 20px; text-align: center;">
+                                <span class="material-icons" style="color: #9e9e9e; font-size: 18px;">chevron_right</span>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 48px;">
+                                <span class="material-icons" style="font-size: 48px; color: #9e9e9e; margin-bottom: 16px; display: block;">inbox</span>
+                                <p style="color: #6c757d; margin: 0; font-size: 16px;">No underpaid claims found</p>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}

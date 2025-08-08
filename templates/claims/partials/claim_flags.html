@@ -1,0 +1,33 @@
+{% for flag in claim.flags.all %}
+    {% if flag.is_active %}
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px; padding: 12px; background: var(--md-surface-variant); border-radius: var(--md-border-radius-small);">
+            <div style="flex: 1;">
+                <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                    <span class="material-icons" style="font-size: 16px; margin-right: 4px; color: var(--md-primary);">flag</span>
+                    <span class="badge badge-info" style="font-size: 10px;">{{ flag.get_flag_type_display }}</span>
+                </div>
+                {% if flag.reason %}
+                    <div class="body-small" style="color: var(--md-on-surface); margin-bottom: 4px;">{{ flag.reason }}</div>
+                {% endif %}
+                <div class="label-small" style="color: var(--md-on-surface-variant);">
+                    by {{ flag.user.username }} • {{ flag.created_at|date:"M d, Y g:i A" }}
+                </div>
+            </div>
+            <button 
+                class="btn btn-sm" 
+                style="background: none; border: none; color: var(--md-error); padding: 4px;"
+                hx-delete="{% url 'claims:remove_flag_htmx' flag.id %}"
+                hx-target="#flagsContainer"
+                hx-confirm="Remove this flag?"
+                title="Remove flag"
+            >
+                <span class="material-icons" style="font-size: 16px;">close</span>
+            </button>
+        </div>
+    {% endif %}
+{% empty %}
+    <div style="text-align: center; padding: 24px;">
+        <span class="material-icons" style="font-size: 32px; color: var(--md-on-surface-variant); margin-bottom: 8px; display: block;">flag</span>
+        <p class="body-small" style="color: var(--md-on-surface-variant); margin: 0;">No flags added yet</p>
+    </div>
+{% endfor %}

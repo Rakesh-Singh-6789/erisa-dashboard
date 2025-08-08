@@ -1,0 +1,46 @@
+<div style="margin-top: 16px; padding: 16px; background: var(--md-primary-container); border-radius: var(--md-border-radius-small);">
+    <form hx-post="{% url 'claims:add_flag_htmx' claim.claim_id %}" hx-target="#flagsContainer" hx-swap="innerHTML">
+        {% csrf_token %}
+        
+        <div style="margin-bottom: 16px;">
+            <label class="form-label" style="display: flex; align-items: center;">
+                <span class="material-icons" style="font-size: 16px; margin-right: 4px;">flag</span>
+                Flag Type
+            </label>
+            <select name="flag_type" class="form-select" required>
+                {% for value, label in flag_types %}
+                    <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <label class="form-label" style="display: flex; align-items: center;">
+                <span class="material-icons" style="font-size: 16px; margin-right: 4px;">edit_note</span>
+                Reason (optional)
+            </label>
+            <textarea 
+                name="reason" 
+                class="form-control" 
+                rows="2" 
+                placeholder="Why is this claim flagged?"
+                style="resize: vertical;"
+            ></textarea>
+        </div>
+        
+        <div style="display: flex; gap: 8px;">
+            <button type="submit" class="btn btn-primary btn-sm" style="flex: 1;">
+                <span class="material-icons" style="font-size: 14px; margin-right: 4px;">add</span>
+                Add Flag
+            </button>
+            <button 
+                type="button" 
+                class="btn btn-outline-primary btn-sm" 
+                style="flex: 1;"
+                onclick="this.closest('div[style*=\"margin-top: 16px\"]').remove()"
+            >
+                Cancel
+            </button>
+        </div>
+    </form>
+</div>

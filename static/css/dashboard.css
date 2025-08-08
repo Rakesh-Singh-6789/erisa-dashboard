@@ -1,0 +1,630 @@
+/* ERISA Recovery Dashboard - Material Design */
+
+:root {
+    /* Material Design 3 Colors */
+    --md-primary: #6750A4;
+    --md-primary-container: #EADDFF;
+    --md-on-primary: #FFFFFF;
+    --md-on-primary-container: #21005D;
+    
+    --md-secondary: #625B71;
+    --md-secondary-container: #E8DEF8;
+    --md-on-secondary: #FFFFFF;
+    --md-on-secondary-container: #1D192B;
+    
+    --md-surface: #FFFBFE;
+    --md-surface-variant: #F4EFF4;
+    --md-on-surface: #1D1B20;
+    --md-on-surface-variant: #49454F;
+    
+    --md-outline: #79747E;
+    --md-outline-variant: #CAC4D0;
+    --md-shadow: rgba(0, 0, 0, 0.15);
+    
+    /* Success/Error Colors */
+    --md-success: #146C2E;
+    --md-success-container: #A7F0BA;
+    --md-error: #BA1A1A;
+    --md-error-container: #FFDAD6;
+    --md-warning: #7A5600;
+    --md-warning-container: #FFDE9C;
+    
+    /* Elevations */
+    --elevation-1: 0 1px 3px var(--md-shadow);
+    --elevation-2: 0 1px 5px var(--md-shadow);
+    --elevation-3: 0 4px 8px var(--md-shadow);
+    --elevation-4: 0 6px 10px var(--md-shadow);
+    
+    /* Typography */
+    --md-font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --md-border-radius: 12px;
+    --md-border-radius-small: 8px;
+}
+
+/* Reset and Base Styles */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--md-font-family);
+    background-color: var(--md-surface);
+    color: var(--md-on-surface);
+    margin: 0;
+    line-height: 1.5;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Material Design Typography */
+.headline-large { font-size: 32px; font-weight: 400; line-height: 40px; }
+.headline-medium { font-size: 28px; font-weight: 400; line-height: 36px; }
+.headline-small { font-size: 24px; font-weight: 400; line-height: 32px; }
+.title-large { font-size: 22px; font-weight: 400; line-height: 28px; }
+.title-medium { font-size: 16px; font-weight: 500; line-height: 24px; }
+.title-small { font-size: 14px; font-weight: 500; line-height: 20px; }
+.body-large { font-size: 16px; font-weight: 400; line-height: 24px; }
+.body-medium { font-size: 14px; font-weight: 400; line-height: 20px; }
+.body-small { font-size: 12px; font-weight: 400; line-height: 16px; }
+.label-large { font-size: 14px; font-weight: 500; line-height: 20px; }
+.label-medium { font-size: 12px; font-weight: 500; line-height: 16px; }
+.label-small { font-size: 11px; font-weight: 500; line-height: 16px; }
+
+/* Container */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+/* Navigation - Material Design App Bar */
+.navbar {
+    background: var(--md-primary);
+    color: var(--md-on-primary);
+    padding: 0;
+    border: none;
+    box-shadow: var(--elevation-2);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.navbar-brand {
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--md-on-primary);
+    text-decoration: none;
+    padding: 16px 0;
+}
+
+.navbar-nav .nav-link {
+    color: var(--md-on-primary);
+    font-weight: 500;
+    padding: 16px 20px;
+    transition: background-color 0.2s ease;
+    text-decoration: none;
+}
+
+.navbar-nav .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--md-on-primary);
+}
+
+/* Material Design Cards */
+.card {
+    background: var(--md-surface);
+    border: 1px solid var(--md-outline-variant);
+    border-radius: var(--md-border-radius);
+    box-shadow: none;
+    transition: box-shadow 0.2s ease;
+}
+
+.card:hover {
+    box-shadow: var(--elevation-1);
+}
+
+.card-elevated {
+    box-shadow: var(--elevation-2);
+    border: none;
+}
+
+.card-header {
+    background: transparent;
+    border-bottom: 1px solid var(--md-outline-variant);
+    padding: 20px 24px 16px;
+    border-radius: var(--md-border-radius) var(--md-border-radius) 0 0;
+}
+
+.card-body {
+    padding: 24px;
+}
+
+.card-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--md-on-surface);
+    margin: 0;
+}
+
+/* Material Design Buttons */
+.btn {
+    border-radius: 20px;
+    font-weight: 500;
+    text-transform: none;
+    padding: 10px 24px;
+    border: none;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.btn-primary {
+    background: var(--md-primary);
+    color: var(--md-on-primary);
+}
+
+.btn-primary:hover {
+    background: var(--md-primary);
+    filter: brightness(0.9);
+    box-shadow: var(--elevation-2);
+}
+
+.btn-outline-primary {
+    background: transparent;
+    border: 1px solid var(--md-outline);
+    color: var(--md-primary);
+}
+
+.btn-outline-primary:hover {
+    background: var(--md-primary-container);
+    color: var(--md-on-primary-container);
+    border-color: var(--md-primary);
+}
+
+.btn-sm {
+    padding: 8px 16px;
+    font-size: 12px;
+    border-radius: 16px;
+}
+
+.btn-floating {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--elevation-3);
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 1000;
+}
+
+/* Material Design Form Controls */
+.form-control {
+    border: 1px solid var(--md-outline);
+    border-radius: var(--md-border-radius-small);
+    padding: 16px;
+    font-size: 14px;
+    background: var(--md-surface);
+    color: var(--md-on-surface);
+    transition: border-color 0.2s ease;
+}
+
+.form-control:focus {
+    border-color: var(--md-primary);
+    box-shadow: none;
+    outline: none;
+}
+
+.form-label {
+    font-weight: 500;
+    color: var(--md-on-surface-variant);
+    margin-bottom: 8px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-select {
+    border: 1px solid var(--md-outline);
+    border-radius: var(--md-border-radius-small);
+    padding: 16px;
+    background: var(--md-surface);
+    color: var(--md-on-surface);
+}
+
+/* Search Bar - Material Design */
+.search-container {
+    position: relative;
+    max-width: 480px;
+    margin: 0 auto 32px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 16px 56px 16px 56px;
+    border: 1px solid var(--md-outline-variant);
+    border-radius: 28px;
+    background: var(--md-surface-variant);
+    font-size: 16px;
+    color: var(--md-on-surface);
+    transition: all 0.2s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--md-primary);
+    background: var(--md-surface);
+    box-shadow: var(--elevation-1);
+}
+
+.search-icon {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--md-on-surface-variant);
+    font-size: 20px;
+}
+
+.search-clear {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--md-on-surface-variant);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+}
+
+.search-clear:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+/* Filter Chip */
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    background: var(--md-surface-variant);
+    border: 1px solid var(--md-outline-variant);
+    border-radius: 16px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--md-on-surface-variant);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: 16px;
+}
+
+.filter-chip:hover {
+    background: var(--md-secondary-container);
+    color: var(--md-on-secondary-container);
+}
+
+.filter-chip.active {
+    background: var(--md-secondary-container);
+    color: var(--md-on-secondary-container);
+    border-color: var(--md-secondary);
+}
+
+/* Table - Material Design */
+.table {
+    background: var(--md-surface);
+    border-radius: var(--md-border-radius);
+    overflow: hidden;
+    box-shadow: var(--elevation-1);
+    margin: 0;
+}
+
+.table thead {
+    background: var(--md-surface-variant);
+}
+
+.table th {
+    border: none;
+    padding: 16px 24px;
+    font-weight: 500;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--md-on-surface-variant);
+}
+
+.table td {
+    border: none;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--md-outline-variant);
+    color: var(--md-on-surface);
+    vertical-align: middle;
+}
+
+.table tbody tr {
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+}
+
+.table tbody tr:hover {
+    background: rgba(103, 80, 164, 0.04);
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Status Badges - Material Design */
+.badge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-success {
+    background: var(--md-success-container);
+    color: var(--md-success);
+}
+
+.badge-danger {
+    background: var(--md-error-container);
+    color: var(--md-error);
+}
+
+.badge-warning {
+    background: var(--md-warning-container);
+    color: var(--md-warning);
+}
+
+.badge-info {
+    background: var(--md-primary-container);
+    color: var(--md-on-primary-container);
+}
+
+/* Modal - Material Design */
+.modal-content {
+    border: none;
+    border-radius: var(--md-border-radius);
+    box-shadow: var(--elevation-4);
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--md-outline-variant);
+    padding: 24px;
+}
+
+.modal-title {
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--md-on-surface);
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.modal-footer {
+    border-top: 1px solid var(--md-outline-variant);
+    padding: 16px 24px;
+}
+
+/* Pagination - Material Design */
+.pagination {
+    justify-content: center;
+    margin-top: 32px;
+}
+
+.page-link {
+    border: none;
+    color: var(--md-primary);
+    padding: 8px 12px;
+    margin: 0 2px;
+    border-radius: 50%;
+    min-width: 40px;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.page-link:hover {
+    background: var(--md-primary-container);
+    color: var(--md-on-primary-container);
+}
+
+.page-item.active .page-link {
+    background: var(--md-primary);
+    color: var(--md-on-primary);
+}
+
+/* Alerts - Material Design */
+.alert {
+    border: none;
+    border-radius: var(--md-border-radius);
+    padding: 16px 24px;
+    margin-bottom: 16px;
+}
+
+.alert-success {
+    background: var(--md-success-container);
+    color: var(--md-success);
+}
+
+.alert-danger {
+    background: var(--md-error-container);
+    color: var(--md-error);
+}
+
+.alert-warning {
+    background: var(--md-warning-container);
+    color: var(--md-warning);
+}
+
+.alert-info {
+    background: var(--md-primary-container);
+    color: var(--md-on-primary-container);
+}
+
+/* Dashboard Stats Cards */
+.stats-card {
+    background: var(--md-surface);
+    border: 1px solid var(--md-outline-variant);
+    border-radius: var(--md-border-radius);
+    padding: 24px;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.stats-card:hover {
+    box-shadow: var(--elevation-2);
+    transform: translateY(-2px);
+}
+
+.stats-number {
+    font-size: 32px;
+    font-weight: 400;
+    color: var(--md-primary);
+    margin: 0;
+}
+
+.stats-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--md-on-surface-variant);
+    margin: 8px 0 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 8px;
+    }
+    
+    .card-body {
+        padding: 16px;
+    }
+    
+    .table th,
+    .table td {
+        padding: 12px 16px;
+    }
+    
+    .search-input {
+        padding: 12px 48px 12px 48px;
+    }
+    
+    .btn-floating {
+        bottom: 16px;
+        right: 16px;
+        width: 48px;
+        height: 48px;
+    }
+}
+
+/* Animation Classes */
+.fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-up {
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Loading States */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--md-outline-variant);
+    border-top: 2px solid var(--md-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Utility Classes */
+.text-primary { color: var(--md-primary) !important; }
+.text-secondary { color: var(--md-secondary) !important; }
+.text-on-surface { color: var(--md-on-surface) !important; }
+.text-on-surface-variant { color: var(--md-on-surface-variant) !important; }
+
+.bg-primary { background-color: var(--md-primary) !important; }
+.bg-primary-container { background-color: var(--md-primary-container) !important; }
+.bg-surface { background-color: var(--md-surface) !important; }
+.bg-surface-variant { background-color: var(--md-surface-variant) !important; }
+
+.elevation-0 { box-shadow: none !important; }
+.elevation-1 { box-shadow: var(--elevation-1) !important; }
+.elevation-2 { box-shadow: var(--elevation-2) !important; }
+.elevation-3 { box-shadow: var(--elevation-3) !important; }
+.elevation-4 { box-shadow: var(--elevation-4) !important; }
+
+/* Status Chips - fixed size */
+.status-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 120px;
+    height: 28px;
+    padding: 0 12px;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background: #eef2f6;
+    color: #374151;
+    border: 1px solid rgba(0,0,0,0.08);
+}
+
+.status-chip--paid {
+    background: #cfeee0 !important; /* slightly stronger */
+    color: #155724 !important;
+    border-color: #9fd9bb !important;
+}
+
+.status-chip--denied {
+    background: #ffd9df !important; /* slightly stronger */
+    color: #721c24 !important;
+    border-color: #f5aeb6 !important;
+}
+
+.status-chip--review {
+    background: #d6e9ff !important; /* slightly stronger */
+    color: #004085 !important;
+    border-color: #a6ccff !important;
+}

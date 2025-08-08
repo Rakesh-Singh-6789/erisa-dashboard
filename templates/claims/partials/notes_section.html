@@ -1,0 +1,35 @@
+<!-- Existing Notes -->
+<div id="notesSection-{{ claim.claim_id }}" style="margin-bottom: 24px;">
+    {% for note in claim.notes.all %}
+        <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; border-left: 3px solid #6c757d;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                <span style="background: #e9ecef; color: #495057; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">{{ note.user.username|capfirst }}</span>
+                <span style="font-size: 11px; color: #6c757d;">{{ note.created_at|timesince }} ago</span>
+            </div>
+            <p style="margin: 0; font-size: 13px; color: #495057; line-height: 1.4;">
+                {{ note.note }}
+            </p>
+        </div>
+    {% endfor %}
+
+    {% for flag in claim.flags.all %}
+        {% if flag.is_active %}
+            <div style="background: #fff3cd; border-radius: 8px; padding: 16px; margin-bottom: 12px; border-left: 3px solid #ffc107;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                    <span style="background: #ffc107; color: #856404; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">Flag - {{ flag.flag_type|capfirst }}</span>
+                    <span style="font-size: 11px; color: #6c757d;">{{ flag.created_at|timesince }} ago</span>
+                </div>
+                <p style="margin: 0; font-size: 13px; color: #856404; line-height: 1.4;">
+                    {{ flag.reason }}
+                </p>
+            </div>
+        {% endif %}
+    {% endfor %}
+
+    {% if not claim.notes.all and not claim.flags.all %}
+        <div style="text-align: center; padding: 24px; color: #6c757d;">
+            <span class="material-icons" style="font-size: 32px; opacity: 0.5; margin-bottom: 8px; display: block;">note</span>
+            No notes or flags yet
+        </div>
+    {% endif %}
+</div>

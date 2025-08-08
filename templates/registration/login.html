@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - ERISA Assessment</title>
+    
+    <!-- Google Fonts - Roboto for Material Design -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    {% load static %}
+    <link href="{% static 'css/dashboard.css' %}" rel="stylesheet">
+</head>
+<body style="background: linear-gradient(135deg, #e8eaf6 0%, #f5f5f5 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center;">
+    <div style="max-width: 400px; width: 100%; margin: 0 24px;">
+        <div class="card card-elevated" style="padding: 0; overflow: hidden;">
+            <!-- Header -->
+            <div style="background: #7c4dff; color: white; text-align: center; padding: 32px 24px;">
+                <div style="margin-bottom: 16px;">
+                    <span class="material-icons" style="font-size: 48px;">assessment</span>
+                </div>
+                <h1 style="margin: 0; font-weight: 500; font-size: 24px;">ERISA Assessment</h1>
+                <p style="margin: 8px 0 0; opacity: 0.9; font-size: 14px;">Claims Analysis Dashboard</p>
+            </div>
+            
+            <!-- Login Form -->
+            <div style="padding: 32px 24px;">
+                {% if form.errors %}
+                    <div class="alert alert-danger" style="margin-bottom: 24px;">
+                        <span class="material-icons" style="vertical-align: middle; margin-right: 8px; font-size: 18px;">error</span>
+                        <span style="vertical-align: middle;">
+                            {% for field, errors in form.errors.items %}
+                                {% for error in errors %}{{ error }}{% endfor %}
+                            {% endfor %}
+                        </span>
+                    </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div style="margin-bottom: 24px;">
+                        <label class="form-label" for="{{ form.username.id_for_label }}">
+                            <span class="material-icons" style="vertical-align: middle; margin-right: 4px; font-size: 16px;">person</span>
+                            Username
+                        </label>
+                        <input 
+                            type="text" 
+                            name="{{ form.username.name }}" 
+                            id="{{ form.username.id_for_label }}"
+                            class="form-control" 
+                            placeholder="Enter your username"
+                            required
+                            autocomplete="username"
+                            style="padding-left: 16px;"
+                        >
+                    </div>
+                    
+                    <div style="margin-bottom: 32px;">
+                        <label class="form-label" for="{{ form.password.id_for_label }}">
+                            <span class="material-icons" style="vertical-align: middle; margin-right: 4px; font-size: 16px;">lock</span>
+                            Password
+                        </label>
+                        <input 
+                            type="password" 
+                            name="{{ form.password.name }}" 
+                            id="{{ form.password.id_for_label }}"
+                            class="form-control" 
+                            placeholder="Enter your password"
+                            required
+                            autocomplete="current-password"
+                            style="padding-left: 16px;"
+                        >
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 16px; margin-bottom: 16px;">
+                        <span class="material-icons" style="vertical-align: middle; margin-right: 8px; font-size: 18px;">login</span>
+                        Sign In
+                    </button>
+                </form>
+                
+                <!-- Demo Credentials -->
+                <div style="background: var(--md-surface-variant); border-radius: var(--md-border-radius-small); padding: 16px; margin-top: 24px;">
+                    <div class="label-small" style="color: var(--md-on-surface-variant); margin-bottom: 8px; text-align: center;">
+                        <span class="material-icons" style="vertical-align: middle; margin-right: 4px; font-size: 16px;">info</span>
+                        DEMO CREDENTIALS
+                    </div>
+                    <div style="text-align: center;">
+                        <div class="body-small" style="color: var(--md-on-surface); margin-bottom: 4px;">
+                            <strong>Username:</strong> admin
+                        </div>
+                        <div class="body-small" style="color: var(--md-on-surface);">
+                            <strong>Password:</strong> admin123
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-outline-primary" style="width: 100%; margin-top: 12px; padding: 8px;" onclick="autoFill()">
+                        <span class="material-icons" style="vertical-align: middle; margin-right: 4px; font-size: 16px;">auto_fix_high</span>
+                        Auto-fill Demo Credentials
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div style="text-align: center; margin-top: 24px;">
+            <p class="body-small" style="color: var(--md-on-surface-variant); margin: 0;">
+                Secure claims analysis platform
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function autoFill() {
+            document.getElementById('{{ form.username.id_for_label }}').value = 'admin';
+            document.getElementById('{{ form.password.id_for_label }}').value = 'admin123';
+        }
+        
+        // Auto-focus username field
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('{{ form.username.id_for_label }}').focus();
+        });
+        
+        // Add subtle animations
+        document.addEventListener('DOMContentLoaded', function() {
+            const card = document.querySelector('.card');
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                card.style.transition = 'all 0.3s ease-out';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 100);
+        });
+    </script>
+</body>
+</html>
