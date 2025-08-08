@@ -7,7 +7,7 @@ services:
       pip install -r requirements.txt
       python manage.py collectstatic --noinput
     startCommand: |
-      ln -sf /var/data/claims_db.sqlite3 ./claims_db.sqlite3 || true
+      mkdir -p /var/data
       python manage.py migrate
       python manage.py runserver 0.0.0.0:$PORT
     envVars:
@@ -17,6 +17,8 @@ services:
         value: "False"
       - key: ALLOWED_HOSTS
         value: "erisa-assessment.onrender.com"
+      - key: SQLITE_DB_PATH
+        value: "/var/data/claims_db.sqlite3"
     disk:
       name: data
       mountPath: /var/data

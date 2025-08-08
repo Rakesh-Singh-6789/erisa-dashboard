@@ -10,7 +10,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-for-development-only-change-in-production'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-for-development-only-change-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -66,7 +66,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'claims_db.sqlite3',
+        'NAME': os.environ.get('SQLITE_DB_PATH', str(BASE_DIR / 'claims_db.sqlite3')),
     }
 }
 
